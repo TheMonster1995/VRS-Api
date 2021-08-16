@@ -68,16 +68,9 @@ app.post('/login', async (req, res) => {
     shop_phone: '(480)584-2208'
   })
 
-  let user = await User.find(
-    {
-      username: req.body.username
-    },
-    (err, result) => {
-      return handleDBQuery(err, result);
-    }
-  );
+  let user = await User.find({ username: req.body.username.toLowerCase() });
 
-  if (user[0] == 'error') return sendResponse(res, 500, 'error_finding_user', null, user[1]);
+  if (user.length == 0) return sendResponse(res, 400, 'user_not_exist', null, 'user_does_not_exist');
 
   user = user[0];
 
@@ -167,7 +160,7 @@ app.post('/user/new', isLoggedIn, async (req, res) => {
     role: req.body.role || 'admin',
     signup_date: new Date(),
     email: req.body.email || '',
-  	username: req.body.username || '',
+  	username: req.body.username.toLowerCase() || '',
     name: req.body.name || '',
     status: req.body.status || 'active',
     password: encPassword
@@ -263,9 +256,8 @@ app.put('/password', isLoggedIn, async (req, res) => {
 
   let token = await checkJWT(req.headers.accesstoken)
 
-  if (token.role != 'admin' && req.body.userid != token.userid) return sendResponse(res, 400, 'invalid_request', null, 'user_not_admin');
-
-  let user = await User.find({user_id: req.body.userid});
+  let user = await User.find({user_id: token.data});
+  user = user[0];
 
   let newPassword = await encrypt(hash(decrypt(req.body.newpassword, 'client')), 'api');
   user.password = newPassword;
@@ -275,7 +267,14 @@ app.put('/password', isLoggedIn, async (req, res) => {
   return sendResponse(res, 200, 'password_changed', null, null);
 })
 
-app.post('/settings', isLoggedIn, async (req, res) => {
+app.get('/settings', isLoggedIn, async (req, res) => {
+  let settings = await General.find();
+  settings = settings[0];
+
+  return sendResponse(res, 200, 'get_settings', settings, null)
+})
+
+app.put('/settings', isLoggedIn, async (req, res) => {
   let token = await checkJWT(req.headers.accesstoken)
 
   if (token.role != 'admin') return sendResponse(res, 400, 'invalid_request', null, 'user_not_admin');
@@ -284,18 +283,18 @@ app.post('/settings', isLoggedIn, async (req, res) => {
   settings = settings[0];
 
   let {
-    trate,
+    tax_rate,
     state,
-    name,
-    address,
-    phone
+    shop_name,
+    shop_address,
+    shop_phone
   } = req.body.newdata;
 
-  settings.tax_rate = trate;
+  settings.tax_rate = tax_rate;
   settings.state = state;
-  settings.shop_name = name;
-  settings.shop_address = address;
-  settings.shop_phone = phone;
+  settings.shop_name = shop_name;
+  settings.shop_address = shop_address;
+  settings.shop_phone = shop_phone;
 
   settings.save();
 
