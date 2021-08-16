@@ -123,6 +123,14 @@ module.exports = {
         http://localhost:3000/forgotpassword/${token}`;
         subject = "Reset password";
         break;
+
+      case 'newUser':
+        text = `You have been added to the VRS system. Here are your username and password:
+
+        username: ${token.username}
+        password: ${token.password}`
+        subject = "Welcome"
+        break;
       default:
         console.log('nothing?');
     }

@@ -158,7 +158,9 @@ app.post('/user/new', isLoggedIn, async (req, res) => {
 
   if (authToken == 'error' || authToken.role != 'admin') return sendResponse(res, 400, 'invalid_request', null, 'token_invalid');
 
-  const password = await encrypt(hash(generatePassword()), 'api');
+  const password = generatePassword();
+
+  const endPassword = await encrypt(hash(password), 'api');
 
   const userData = {
     user_id: randomGenerator(6),
@@ -168,10 +170,12 @@ app.post('/user/new', isLoggedIn, async (req, res) => {
   	username: req.body.username || '',
     name: req.body.name || '',
     status: req.body.status || 'active',
-    password
+    password: encPassword
   };
 
   const newUser = await User.create(userData);
+
+  sendEmail(userData.email, 'newUser', {username: userData.username, password});
 
   return sendResponse(res, 200, 'logged_in', {userId: userData.user_id}, null);
 })
