@@ -50,11 +50,13 @@ app.get('/auth', async (req, res) => {
 
   const result = await checkJWT(accessToken);
 
-  if (result != 'error') return sendResponse(res, 200, 'logged_in', {role: result.role}, null);
-
-  return res.status(401).send({
+  if (result == 'error') return res.status(401).send({
     message: 'not_logged_in'
   });
+
+  const user = await User.find({user_id: result.data})
+
+  if (result != 'error') return sendResponse(res, 200, 'logged_in', {role: user[0].role, username: user[0].username, name: user[0].name}, null);
 })
 
 app.post('/login', async (req, res) => {
@@ -79,9 +81,11 @@ app.post('/login', async (req, res) => {
 
   if (password != uPassword) return sendResponse(res, 400, 'wrong_password', null, 'wrong_password');
 
+  if (user.status == 'inactive') return sendResponse(res, 401, 'user_inactive', null, 'user_inactive');
+
   const accessToken = createJWT({data: user.user_id, role: user.role}, '2h');
 
-  return sendResponse(res, 200, 'logged_in', {accessToken, role: user.role, username: user.username}, null);
+  return sendResponse(res, 200, 'logged_in', {accessToken, role: user.role, username: user.username, name: user.name}, null);
 })
 
 app.get('/orders', isLoggedIn, async (req, res) => {
@@ -89,7 +93,7 @@ app.get('/orders', isLoggedIn, async (req, res) => {
   const shopOrders = await ShopOrder.find({})
 
   const payload = orders.map(order => ({
-    order_id: order.order_id
+    order_id: order.order_id,
     order,
     shopOrder: ShopOrders[ShopOrders.findIndex(shOrder => shOrder.order_num === order.order_num)]
   }))
@@ -153,6 +157,20 @@ app.get('/users', isLoggedIn, async (req, res) => {
   return sendResponse(res, 200, 'getting_users', users, null);
 })
 
+// app.get('/user', isLoggedIn, async (req, res) => {
+//   let authToken = await checkJWT(req.headers.accesstoken);
+//
+//   let user = await User.find({user_id: authToken.data});
+//
+//   user = {
+//     name: user.name,
+//     username: user.username,
+//     role: user.role
+//   }
+//
+//   return sendResponse(res, 200, 'getting_users', user, null);
+// })
+
 app.post('/user/new', isLoggedIn, async (req, res) => {
   let authToken = await checkJWT(req.headers.accesstoken);
 
@@ -160,16 +178,16 @@ app.post('/user/new', isLoggedIn, async (req, res) => {
 
   const password = generatePassword();
 
-  const endPassword = await encrypt(hash(password), 'api');
+  const encPassword = await encrypt(hash(password), 'api');
 
   const userData = {
     user_id: randomGenerator(6),
-    role: req.body.role || 'admin',
+    role: req.body.user.role || 'admin',
     signup_date: new Date(),
-    email: req.body.email || '',
-  	username: req.body.username.toLowerCase() || '',
-    name: req.body.name || '',
-    status: req.body.status || 'active',
+    email: req.body.user.email || '',
+  	username: req.body.user.username.toLowerCase() || '',
+    name: req.body.user.name || '',
+    status: req.body.user.status || 'active',
     password: encPassword
   };
 
@@ -210,6 +228,8 @@ app.get('/password/forgot/link', async (req, res) => {
 
   if (!user) return sendResponse(res, 400, 'user_not_exist', null, 'user_does_not_exist');
 
+  if (user[0].status == 'inactive') return sendResponse(res, 401, 'user_inactive', null, 'user_inactive');
+
   let fpToken = await createJWT({userid: user[0].user_id}, '2h');
 
   try {
@@ -224,9 +244,6 @@ app.get('/password/forgot/link', async (req, res) => {
 app.get('/password/forgot', async (req, res) => {
   let token = req.headers.forgottoken;
 
-  console.log('here');
-  console.log(token);
-
   token = await checkJWT(token)
 
   if (token == 'error') return sendResponse(res, 400, 'invalid_token', null, 'invalid_forgot_token');
@@ -238,9 +255,6 @@ app.get('/password/forgot', async (req, res) => {
 
 app.post('/password/forgot', async (req, res) => {
   let token = req.headers.forgottoken;
-
-  console.log('here');
-  console.log(token);
 
   token = await checkJWT(token)
 
@@ -256,7 +270,7 @@ app.post('/password/forgot', async (req, res) => {
 
   let accessToken = await createJWT({data: user.user_id, role: user.role}, '2h');
 
-  return sendResponse(res, 200, 'password_reset', {accessToken, role: user.role, username: user.username}, null)
+  return sendResponse(res, 200, 'password_reset', {accessToken, role: user.role, username: user.username, name: user.name}, null)
 })
 
 app.put('/password', isLoggedIn, async (req, res) => {
