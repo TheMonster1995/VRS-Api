@@ -86,8 +86,15 @@ app.post('/login', async (req, res) => {
 
 app.get('/orders', isLoggedIn, async (req, res) => {
   const orders = await Order.find({});
+  const shopOrders = await ShopOrder.find({})
 
-  return sendResponse(res, 200, 'getting_orders', orders, null);
+  const payload = orders.map(order => ({
+    order_id: order.order_id
+    order,
+    shopOrder: ShopOrders[ShopOrders.findIndex(shOrder => shOrder.order_num === order.order_num)]
+  }))
+
+  return sendResponse(res, 200, 'getting_orders', payload, null);
 })
 
 app.post('/order/new', isLoggedIn, async (req, res) => {
