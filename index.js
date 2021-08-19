@@ -45,6 +45,21 @@ app.use(bodyParser.json())
 app.use(express.static("assets"));
 app.use(cors());
 
+app.get('/share/:id', async (req, res) => {
+  let order = await Order.find({order_id: req.params.id});
+  let data = await General.find({});
+
+  data = {
+    name: data[0].shop_name,
+    phone: data[0].shop_phone,
+    address: data[0].shop_address
+  }
+
+  if (order.length === 0) return res.status(404).render('./notFound');
+
+  res.render('./shareOrder', {order: order[0], data: data})
+})
+
 app.get('/auth', async (req, res) => {
   let accessToken = req.headers.accesstoken;
 
@@ -95,7 +110,7 @@ app.get('/orders', isLoggedIn, async (req, res) => {
   const payload = orders.map(order => ({
     order_id: order.order_id,
     order,
-    shopOrder: ShopOrders[ShopOrders.findIndex(shOrder => shOrder.order_num === order.order_num)]
+    shopOrder: shopOrders[shopOrders.findIndex(shOrder => shOrder.order_num === order.order_num)]
   }))
 
   return sendResponse(res, 200, 'getting_orders', payload, null);
@@ -135,7 +150,7 @@ app.put('/order', isLoggedIn, async (req, res) => {
 })
 
 app.delete('/order', isLoggedIn, async (req, res) => {
-  let order = await Order.find({order_num: req.body.orderid})
+  let order = await Order.find({order_id: req.body.orderid})
   await ShopOrder.deleteOne({order_num: order[0].order_num});
   await Order.deleteOne({order_id: req.body.orderid});
 
@@ -347,7 +362,7 @@ const port = process.env.PORT || 4050;
 app.listen(port, async () => {
 	console.log("Server is listening on port: ", port);
 
-  // const newOrder = {
+  // const newOrderData = {
   //     "received_date_time": "2021-08-06T19:30:00.000Z",
   //     "promised_date_time": "2021-08-06T19:30:00.000Z",
   //     "customer_info": {
@@ -419,8 +434,9 @@ app.listen(port, async () => {
   //     "authorized_by": 'Admin dude',
   //     "order_num": '7820211'
   // }
-
-  // const newNOrder = await Order.create(newOrder)
+  //
+  // const newNOrder = await Order.create(newOrderData)
+  // console.log(newOrderData.order_id);
   // const newNOrder = await Order.remove({order_id: "41853121"});
   // let newNOrder = await Order.find({order_id: "86309049"}, (err, result) => handleDBQuery(err, result));
 

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Share no. <%= order.order_num %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+      .share-main {
+        min-width: 1296px;
+      }
+
+      @media print {
+        .d-print-none {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class='mt-5'>
+      <div class='d-flex justify-content-end me-5 d-print-none'>
+        <button class='btn text-primary fs-4 p-0 mx-2' type='button' onclick='javascript:window.print()'><i class='bi bi-printer'></i></button>
+        <button class='btn text-primary fs-4 p-0 mx-2' type='button' onclick='javascript:window.print()'><i class='bi bi-download'></i></button>
+      </div>
+      <div class='share-main p-4'>
+        <div class='text-center mx-auto w-75 my-3'>
+          <h3><%= data.name %></h3>
+          <h5 class='text-secondary'><%= data.address %> | <%= data.phone %></h5>
+          <h6 class='text-secondary'>Order no. <%= order.order_num %></h6>
+        </div>
+        <div class='card'>
+          <div class='card-body'>
+            <div class='card-title'>
+              <div class='row'>
+                <div class='col-6'>
+                  <div class='card-text mt-1'><i class="bi bi-person me-3"></i><%= order.customer_info.name %></div>
+                  <div class='card-text mt-1'><i class="bi bi-telephone me-3"></i><%= order.customer_info.phone %></div>
+                </div>
+                <div class='col-6'>
+                  <div class='card-text mt-1'>
+                    <span class='me-3'>Recieved at</span>
+                    <%= new Date(order.received_date_time).toDateString() %>
+                  </div>
+                  <div class='card-text mt-1'>
+                    <span class='me-3'>Promised</span>
+                    <%= new Date(order.promised_date_time).toDateString() %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class='row'>
+              <div class='col-6 border-end w-50'>
+                <div class='card-text mt-1'><i class="bi bi-house me-3"></i><%= order.customer_info.address %></div>
+                <div class='card-text mt-3'>Second authorization</div>
+                <div class='card-text mt-1'><i class="bi bi-person me-3"></i><%= order.customer_info.second_auth.name %></div>
+                <div class='card-text mt-1'><i class="bi bi-telephone me-3"></i><%= order.customer_info.second_auth.phone %></div>
+              </div>
+              <div class='col-6'>
+                <div class='card-text mt-3'>Car info</div>
+                <div class='row'>
+                  <div class='col border-end'>
+                    <div class='card-text mt-1'>Year: <%= order.car_info.year %></div>
+                  </div>
+                  <div class='col'>
+                    <div class='card-text mt-1'>Make: <%= order.car_info.make %></div>
+                  </div>
+                </div>
+                <div class='row'>
+                  <div class='col border-end'>
+                    <div class='card-text mt-1'>Vin: #<%= order.car_info.vin %></div>
+                  </div>
+                  <div class='col'>
+                    <div class='card-text mt-1'>License: <%= order.car_info.license %></div>
+                  </div>
+                </div>
+                <div class='row'>
+                  <div class='col border-end'>
+                    <div class='card-text mt-1'>Odometer: #<%= order.car_info.odometer %></div>
+                  </div>
+                  <div class='col'>
+                    <div class='card-text mt-1'>motor: #<%= order.car_info.motor %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr class='mt-4' />
+            <div class='card-title fw-bold'>Parts</div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">QTY.</th>
+                  <th scope="col">Part no.</th>
+                  <th scope="col">Name of part</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Price total</th>
+                  <th scope="col">Warranty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for (i = 0; i < order.parts.length; i++) { %>
+                  <tr>
+                    <th scope="row"><%= i + 1 %></th>
+                    <td><%= order.parts[i].qty %></td>
+                    <td><%= order.parts[i].num %></td>
+                    <td><%= order.parts[i].name %></td>
+                    <td><%= order.parts[i].price %></td>
+                    <td><%= order.parts[i].price_total %></td>
+                    <td><%= order.parts[i].warranty.toString() == 'true' ? 'Yes' : 'No' %></td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+            <div class='row'>
+              <div class='col'>
+                <div class='card-title fw-bold'>Labore</div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Description of service</th>
+                      <th scope="col">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% for (i = 0; i < order.labore.length; i++) { %>
+                      <tr>
+                        <th scope="row"><%= i + 1 %></th>
+                        <td><%= order.labore[i].name %></td>
+                        <td><%= order.labore[i].price %></td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+                <div class='terms'>
+                  <% if (order.cost_profit_representation) { %>
+                    <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>This charge represent costs and profits to the motor Vehicle repaire facility for miscellaneous shop suplies or waste disposal.</div>
+                  <% } %>
+
+                  <% if (order.law_charge) { %>
+                    <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>This amount includes a charge of $<%= order.law_charge_fee %> which is required under <%= order.state.charAt(0).toUpperCase() + order.state.slice(1) %> law.</div>
+                  <% } %>
+
+                  <% if (order.written_estimate_choice === 'none') { %>
+                    <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>No written estimate requested</div>
+                  <% } %>
+
+                  <% if (order.written_estimate_choice === 'requested') { %>
+                    <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>Written estimate requested. The final Bill may not Exceed this estimate without cusomer's written approval.</div>
+                  <% } %>
+
+                  <% if (order.written_estimate_choice === 'limited') { %>
+                    <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>Written estimate not requested within a limit of $<%= order.written_estimate_limit %>. The shop may not exeed this amount without customer's written or oral approval.</div>
+                  <% } %>
+
+                  <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>Customer <%= !order.return_replaced_parts ? 'does not' : '' %> desire the return of any of the Parts that are replaced during the authorized repairs.</div>
+
+                  <div class='card-text mt-2'><i class='bi bi-check2 me-2'></i>Estimate is good for 30 days. This shop is not responsible for damage caused by theft, Fire, or acts of nature. I authorize the above repaires, along with any nececery materials. I autorize you and yor employees to operat my vehicle for the purpose of testing, and delivery at my risk. An express mechanic's lien is hereby acknowledge on the above vehicle to secure the amount of the repairs thereto. If I cancel repaires prior to thire completion for any reason, a tear-down and reassembly fee of $<%= order.cancel_fee || 0 %> will be applied.</div>
+                </div>
+              </div>
+              <div class='col'>
+                <div class='card-title fw-bold'>Total</div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Description</th>
+                      <th scope="col">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">1</th>
+                      <td>Labore only</td>
+                      <td><%= order.labore_only %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">2</th>
+                      <td>Parts</td>
+                      <td><%= order.parts_fee %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">3</th>
+                      <td>Gas, oil & grease</td>
+                      <td><%= order.gas_oil_grease %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">4</th>
+                      <td>Misc. mercendise</td>
+                      <td><%= order.misc_merch %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">5</th>
+                      <td>Sublet repairs</td>
+                      <td><%= order.sublet_repairs %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">6</th>
+                      <td>Storage fee</td>
+                      <td><%= order.storage_fee %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">7</th>
+                      <td>Tax</td>
+                      <td><%= order.tax %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">8</th>
+                      <th>Total</th>
+                      <th><%= order.total_fee %></th>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <hr class='my-4' />
+            <div class='card-text fw-bold d-inline-block mx-3'>Authorized by: <%= order.authorized_by %></div>
+            <div class='card-text fw-bold d-inline-block mx-3'>Date: <%= new Date(order.submission_date).toDateString() %></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
