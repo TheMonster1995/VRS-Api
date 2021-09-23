@@ -3,7 +3,8 @@ const customer = require('./customer'),
   shopOrder = require('./shopOrder'),
   part = require('./part'),
   general = require('./general'),
-  user = require('./user');
+  user = require('./user'),
+  costs = require('./costs');
 
 module.exports = {
   General: general,
@@ -11,5 +12,6 @@ module.exports = {
   ShopOrder: shopOrder,
   Part: part,
   User: user,
-  Customer: customer
+  Customer: customer,
+  Costs: costs
 }

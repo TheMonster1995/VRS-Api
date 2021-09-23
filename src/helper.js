@@ -120,7 +120,7 @@ module.exports = {
       case 'fp':
         text = `Use the following link to reset your password:
 
-        http://localhost:3000/forgotpassword/${token}`;
+        http://51.75.182.106:3000/forgotpassword/${token}`;
         subject = "Reset password";
         break;
 

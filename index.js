@@ -4,14 +4,16 @@ const express 		= require('express'),
   mongoose 				= require('mongoose'),
   cors						= require('cors'),
   _               = require('lodash'),
-  nodeMailer      = require('nodemailer');
+  nodeMailer      = require('nodemailer'),
+  path            = require('path');
 
 const {
   User,
   Order,
   ShopOrder,
   Part,
-  General
+  General,
+  Costs
 } = require('./models');
 
 const {
@@ -38,6 +40,7 @@ const app = express();
 mongoose.connect("mongodb://localhost/auto_repairshop");
 
 app.set("view engine", "ejs");
+app.set('views', path.join(__dirname, '/views'));
 app.use(bodyParser.urlencoded({
 	extended: true
 }));
@@ -149,10 +152,10 @@ app.put('/order', isLoggedIn, async (req, res) => {
   return sendResponse(res, 200, 'order_updated', {orderId: order[0].order_id}, null)
 })
 
-app.delete('/order', isLoggedIn, async (req, res) => {
-  let order = await Order.find({order_id: req.body.orderid})
+app.delete('/order/:orderid', isLoggedIn, async (req, res) => {
+  let order = await Order.find({order_id: req.params.orderid})
   await ShopOrder.deleteOne({order_num: order[0].order_num});
-  await Order.deleteOne({order_id: req.body.orderid});
+  await Order.deleteOne({order_id: req.params.orderid});
 
   return sendResponse(res, 200, 'order_deleted', null, null);
 })
@@ -172,26 +175,12 @@ app.get('/users', isLoggedIn, async (req, res) => {
   return sendResponse(res, 200, 'getting_users', users, null);
 })
 
-// app.get('/user', isLoggedIn, async (req, res) => {
-//   let authToken = await checkJWT(req.headers.accesstoken);
-//
-//   let user = await User.find({user_id: authToken.data});
-//
-//   user = {
-//     name: user.name,
-//     username: user.username,
-//     role: user.role
-//   }
-//
-//   return sendResponse(res, 200, 'getting_users', user, null);
-// })
-
 app.post('/user/new', isLoggedIn, async (req, res) => {
   let authToken = await checkJWT(req.headers.accesstoken);
 
   if (authToken == 'error' || authToken.role != 'admin') return sendResponse(res, 400, 'invalid_request', null, 'token_invalid');
 
-  const password = generatePassword();
+  const password = decrypt(req.body.user.password, 'client');
 
   const encPassword = await encrypt(hash(password), 'api');
 
@@ -226,12 +215,12 @@ app.put('/user', isLoggedIn, async (req, res) => {
   return sendResponse(res, 200, 'user_updated', {userId: req.body.userid}, null)
 })
 
-app.delete('/user', isLoggedIn, async (req, res) => {
+app.delete('/user/:userid', isLoggedIn, async (req, res) => {
   let authToken = await checkJWT(req.headers.accesstoken);
 
   if (authToken == 'error' || authToken.role != 'admin') return sendResponse(res, 400, 'invalid_request', null, 'token_invalid');
 
-  await User.deleteOne({ user_id: req.body.userid });
+  await User.deleteOne({ user_id: req.params.userid });
 
   return sendResponse(res, 200, 'user_deleted', null, null)
 })
@@ -241,7 +230,7 @@ app.get('/password/forgot/link', async (req, res) => {
 
   let user = await User.find({email: userMail});
 
-  if (!user) return sendResponse(res, 400, 'user_not_exist', null, 'user_does_not_exist');
+  if (!user || user.length == 0) return sendResponse(res, 400, 'user_not_exist', null, 'user_does_not_exist');
 
   if (user[0].status == 'inactive') return sendResponse(res, 401, 'user_inactive', null, 'user_inactive');
 
@@ -324,7 +313,7 @@ app.put('/settings', isLoggedIn, async (req, res) => {
     shop_name,
     shop_address,
     shop_phone
-  } = req.body.newdata;
+  } = req.body.data;
 
   settings.tax_rate = tax_rate;
   settings.state = state;
@@ -335,6 +324,38 @@ app.put('/settings', isLoggedIn, async (req, res) => {
   settings.save();
 
   return sendResponse(res, 200, 'settings_saved', null, null);
+})
+
+app.get('/costs', isLoggedIn, async (req, res) => {
+  let costs = await Costs.find();
+
+  return sendResponse(res, 200, 'get_costs', costs, null)
+})
+
+app.post('/costs/new', isLoggedIn, async (req, res) => {
+  const costsData = {
+    ...req.body,
+    costs_id: randomGenerator(8)
+  };
+
+  await Costs.create(costsData);
+
+  return sendResponse(res, 200, 'costs_saved', { costsId: costsData.costs_id }, null);
+})
+
+app.put('/costs', isLoggedIn, async (req, res) => {
+  await Costs.updateOne(
+    { costs_id: req.body.costsid },
+    { $set: { ...req.body.costsdata } }
+  )
+
+  return sendResponse(res, 200, 'costs_updated', null, null)
+})
+
+app.delete('/costs/:costsid', isLoggedIn, async (req, res) => {
+  await Costs.deleteOne({costs_id: req.params.costsid});
+
+  return sendResponse(res, 200, 'costs_deleted', null, null);
 })
 
 app.post('/part/new', isLoggedIn, (req, res) => {
