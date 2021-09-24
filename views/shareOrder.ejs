@@ -216,8 +216,13 @@
               </div>
             </div>
             <hr class='my-4' />
-            <div class='card-text fw-bold d-inline-block mx-3'>Authorized by: <%= order.authorized_by %></div>
-            <div class='card-text fw-bold d-inline-block mx-3'>Date: <%= new Date(order.submission_date).toDateString() %></div>
+            <div class='d-flex justify-content-between'>
+              <div>
+                <div class='card-text fw-bold d-inline-block mx-3'>Authorized by: <%= order.authorized_by %></div>
+                <div class='card-text fw-bold d-inline-block mx-3'>Date: <%= new Date(order.submission_date).toDateString() %></div>
+              </div>
+              <div class='card-text fw-bold d-inline-block me-4'>Customer signature</div>
+            </div>
           </div>
         </div>
       </div>
