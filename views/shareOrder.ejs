@@ -27,7 +27,12 @@
       <div class='share-main p-4'>
         <div class='text-center mx-auto w-75 my-3'>
           <h3><%= data.name %></h3>
-          <h5 class='text-secondary'><%= data.address %> | <%= data.phone %></h5>
+          <h5 class='text-secondary'>
+            <%= data.address %>
+            <% for (i = 0; i < data.phones.length; i++) { %>
+              | <%= data.phones[i] %>
+            <% } %>
+          </h5>
           <h6 class='text-secondary'>Order no. <%= order.order_num %></h6>
         </div>
         <div class='card'>
@@ -35,52 +40,52 @@
             <div class='card-title'>
               <div class='row'>
                 <div class='col-6'>
-                  <div class='card-text mt-1'><i class="bi bi-person me-3"></i><%= order.customer_info.name %></div>
-                  <div class='card-text mt-1'><i class="bi bi-telephone me-3"></i><%= order.customer_info.phone %></div>
+                  <div class='card-text mt-1'><i class="bi bi-person text-muted me-1"></i><span class='text-muted me-3'>Customer: </span><span class='fst-italic'><%= order.customer_info.name %></span></div>
+                  <div class='card-text mt-1'><i class="bi bi-telephone text-muted me-1"></i><span class='text-muted me-3'>Phone: </span><span class='fst-italic'><%= order.customer_info.phone %></span></div>
                 </div>
                 <div class='col-6'>
                   <div class='card-text mt-1'>
-                    <span class='me-3'>Recieved at</span>
-                    <%= new Date(order.received_date_time).toDateString() %>
+                    <span class='me-3 text-muted'>Recieved at</span>
+                    <span class='fst-italic'><%= new Date(order.received_date_time).toDateString() %></span>
                   </div>
                   <div class='card-text mt-1'>
-                    <span class='me-3'>Promised</span>
-                    <%= new Date(order.promised_date_time).toDateString() %>
+                    <span class='me-3 text-muted'>Promised</span>
+                    <span class='fst-italic'><%= new Date(order.promised_date_time).toDateString() %></span>
                   </div>
                 </div>
               </div>
             </div>
             <div class='row'>
               <div class='col-6 border-end w-50'>
-                <div class='card-text mt-1'><i class="bi bi-house me-3"></i><%= order.customer_info.address %></div>
-                <div class='card-text mt-3'>Second authorization</div>
-                <div class='card-text mt-1'><i class="bi bi-person me-3"></i><%= order.customer_info.second_auth.name %></div>
-                <div class='card-text mt-1'><i class="bi bi-telephone me-3"></i><%= order.customer_info.second_auth.phone %></div>
+                <div class='card-text mt-1'><i class="bi bi-house me-1 text-muted"></i><span class='text-muted me-3'>Addrsee: </span><span class='fst-italic'><%= order.customer_info.address %></span></div>
+                <div class='card-text mt-3 text-muted'>Second authorization</div>
+                <div class='card-text mt-1'><i class="bi bi-person me-1 text-muted"></i><span class='text-muted me-3'>Name: </span><span class='fst-italic'><%= order.customer_info.second_auth.name %></span></div>
+                <div class='card-text mt-1'><i class="bi bi-telephone me-1 text-muted"></i><span class='text-muted me-3'>Phone: </span><span class='fst-italic'><%= order.customer_info.second_auth.phone %></span></div>
               </div>
               <div class='col-6'>
-                <div class='card-text mt-3'>Car info</div>
+                <div class='card-text mt-3 fw-bold'>Car info</div>
                 <div class='row'>
                   <div class='col border-end'>
-                    <div class='card-text mt-1'>Year: <%= order.car_info.year %></div>
+                    <div class='card-text mt-1'><span class='text-muted'>Make: </span><span class='fst-italic'><%= order.car_info.make %></span></div>
                   </div>
                   <div class='col'>
-                    <div class='card-text mt-1'>Make: <%= order.car_info.make %></div>
+                    <div class='card-text mt-1'><span class='text-muted'>License: </span><span class='fst-italic'><%= order.car_info.license %></span></div>
                   </div>
                 </div>
                 <div class='row'>
                   <div class='col border-end'>
-                    <div class='card-text mt-1'>Vin: #<%= order.car_info.vin %></div>
+                    <div class='card-text mt-1'><span class='text-muted'>Model: </span><span class='fst-italic'><%= order.car_info.model %></span></div>
                   </div>
                   <div class='col'>
-                    <div class='card-text mt-1'>License: <%= order.car_info.license %></div>
+                    <div class='card-text mt-1'><span class='text-muted'>Vin: </span><span class='fst-italic'>#<%= order.car_info.vin %></span></div>
                   </div>
                 </div>
                 <div class='row'>
                   <div class='col border-end'>
-                    <div class='card-text mt-1'>Odometer: #<%= order.car_info.odometer %></div>
+                    <div class='card-text mt-1'><span class='text-muted'>Year: </span><span class='fst-italic'><%= order.car_info.year %></span></div>
                   </div>
                   <div class='col'>
-                    <div class='card-text mt-1'>motor: #<%= order.car_info.motor %></div>
+                    <div class='card-text mt-1'><span class='text-muted'>Odometer: </span><span class='fst-italic'>#<%= order.car_info.odometer %></span></div>
                   </div>
                 </div>
               </div>

@@ -5,6 +5,7 @@ const shopOrderSchema = mongoose.Schema({
 	order_num: Number,
 	parts: Array,
 	labore: Array,
+	material: Array,
 	gas_oil_grease: String,
 	misc_merch: String,
 	sublet_repairs: String,

@@ -28,7 +28,8 @@ const {
   cellRegex,
   sendEmail,
   handleDBQuery,
-  generatePassword
+  generatePassword,
+  numberNormalizer
 } = require('./src/helper');
 
 const {
@@ -54,13 +55,37 @@ app.get('/share/:id', async (req, res) => {
 
   data = {
     name: data[0].shop_name,
-    phone: data[0].shop_phone,
+    phones: data[0].shop_phones,
     address: data[0].shop_address
   }
 
   if (order.length === 0) return res.status(404).render('./notFound');
 
-  res.render('./shareOrder', {order: order[0], data: data})
+  order = order[0];
+
+	let numList = [
+    'gas_oil_grease',
+  	'misc_merch',
+  	'sublet_repairs',
+  	'storage_fee',
+  	'labore_only',
+  	'parts_fee',
+  	'tax',
+  	'total_fee',
+  	'cancel_fee',
+  	'written_estimate_limit',
+  	'law_charge_fee'
+  ]
+
+  numList.forEach(item => {
+    order[item] = numberNormalizer(order[item], -Infinity);
+  });
+
+  order.parts = order.parts.map(part => ({...part, price: numberNormalizer(part.price), price_total: numberNormalizer(part.price_total)}))
+
+  order.labore = order.labore.map(lb => ({...lb, price: numberNormalizer(lb.price)}))
+
+  res.render('./shareOrder', {order: order, data: data})
 })
 
 app.get('/auth', async (req, res) => {
@@ -81,11 +106,12 @@ app.post('/login', async (req, res) => {
   let generalSettings = await General.find();
 
   if (!generalSettings[0]) await General.create({
+    tax_label: 'Tax',
     tax_rate: '8.3',
     state: 'California',
     shop_name: 'AZ Auto repair and body',
     shop_address: '1017 S 30th Ave Phoenix, AZ 85009',
-    shop_phone: '(480)584-2208'
+    shop_phones: ['(480)584-2208']
   })
 
   let user = await User.find({ username: req.body.username.toLowerCase() });
@@ -308,18 +334,20 @@ app.put('/settings', isLoggedIn, async (req, res) => {
   settings = settings[0];
 
   let {
+    tax_label,
     tax_rate,
     state,
     shop_name,
     shop_address,
-    shop_phone
+    shop_phones
   } = req.body.data;
 
+  settings.tax_label = tax_label;
   settings.tax_rate = tax_rate;
   settings.state = state;
   settings.shop_name = shop_name;
   settings.shop_address = shop_address;
-  settings.shop_phone = shop_phone;
+  settings.shop_phones = shop_phones;
 
   settings.save();
 
